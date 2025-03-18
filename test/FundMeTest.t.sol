@@ -29,7 +29,7 @@ contract FundMeTest is Test {
 
     function testOwnerIsDeployer() public view {
         address expected = msg.sender;
-        address actual = fundMe.i_owner();
+        address actual = fundMe.getOwner();
         console.log(address(this));
         assertEq(actual, expected, "Owner is not the deployer");
     }
@@ -51,5 +51,46 @@ contract FundMeTest is Test {
         uint256 expected = SEND_VALUE;
         uint256 actual = fundMe.getAddressToAmountFunded(USER);
         assertEq(actual, expected, "Funded amount is not 10");
+    }
+
+    function testAddsFunderToArrayOfFunders() public {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
+        address funder = fundMe.getFunder(0);
+        assertEq(funder, USER, "Funder is not USER");
+    }
+
+    modifier funded() {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
+        _;
+    }
+
+    function testOwnerCanWithdraw() public funded {
+        vm.expectRevert();
+        vm.prank(USER);
+        fundMe.withdraw();
+        console.log("Owner", fundMe.getOwner());
+        console.log("USER", USER);
+    }
+
+    function testWithdrawWithASingleFunder() public funded {
+        uint256 startingOwnerBalance = fundMe.getOwner().balance;
+        uint256 statingFundMeBalance = address(fundMe).balance;
+        console.log("Starting Owner Balance", startingOwnerBalance);
+        console.log("Starting FundMe Balance", statingFundMeBalance);
+        
+        vm.prank(fundMe.getOwner());
+
+        fundMe.withdraw();
+
+        uint256 endingOwnerBalance = fundMe.getOwner().balance;
+        uint256 endingFundMeBalance = address(fundMe).balance;
+
+        console.log("Ending Owner Balance", endingOwnerBalance);
+        console.log("Ending FundMe Balance", endingFundMeBalance);
+
+        assertEq(endingFundMeBalance,0);
+        assertEq(endingOwnerBalance, startingOwnerBalance + statingFundMeBalance);
     }
 }
