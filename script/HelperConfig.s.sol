@@ -10,6 +10,7 @@ contract HelperConfig is Script {
 
     uint8 public constant DECIMALS = 8;
     int256 public constant INITIAL_ANSWER = 2000e8;
+
     struct NetworkConfig {
         address priceFeed;
     }
@@ -26,10 +27,7 @@ contract HelperConfig is Script {
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
         if (activeEthConfig.priceFeed != address(0)) return activeEthConfig;
         vm.startBroadcast();
-        MockV3Aggregator mockPriceFeed = new MockV3Aggregator(
-            DECIMALS,
-            INITIAL_ANSWER
-        );
+        MockV3Aggregator mockPriceFeed = new MockV3Aggregator(DECIMALS, INITIAL_ANSWER);
         vm.stopBroadcast();
 
         return NetworkConfig(address(mockPriceFeed));

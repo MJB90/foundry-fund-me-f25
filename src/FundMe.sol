@@ -5,6 +5,7 @@ pragma solidity ^0.8.18;
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {PriceConverter} from "./PriceConverter.sol";
 import {console} from "forge-std/Test.sol";
+
 error FundMe__NotOwner();
 
 contract FundMe {
@@ -40,6 +41,7 @@ contract FundMe {
         if (msg.sender != i_owner) revert FundMe__NotOwner();
         _;
     }
+
     function cheaperWithdraw() public onlyOwner {
         uint256 fundersLength = s_funders.length;
         for (uint256 funderIndex = 0; funderIndex < fundersLength; funderIndex++) {
@@ -58,6 +60,7 @@ contract FundMe {
         (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
         require(callSuccess, "Call failed");
     }
+
     function withdraw() public onlyOwner {
         for (uint256 funderIndex = 0; funderIndex < s_funders.length; funderIndex++) {
             address funder = s_funders[funderIndex];
